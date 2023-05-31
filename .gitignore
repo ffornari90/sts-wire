@@ -121,6 +121,9 @@ rclone
 .vscode/*
 mountedVolume
 mountedVolume/*
+pw-file
+certs
+certs/*
 
 # Instance folder files
 .*instance/*.log
