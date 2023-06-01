@@ -1,7 +1,7 @@
 FROM ubuntu:latest
 RUN DEBIAN_FRONTEND=noninteractive apt update && \
     DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -y \
-    ca-certificates curl wget gettext-base gpg gpg-agent git make golang patch build-essential fuse && \
+    ca-certificates curl wget gettext-base gpg gpg-agent git make golang patch build-essential fuse fio && \
     DEBIAN_FRONTEND=noninteractive apt clean && \
     curl repo.data.kit.edu/repo-data-kit-edu-key.gpg | apt-key add - && \
     echo "deb https://repo.data.kit.edu/debian/stable ./" > /etc/apt/sources.list.d/kit.list && \
