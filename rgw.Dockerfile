@@ -19,6 +19,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt update && \
     DEBIAN_FRONTEND=noninteractive apt clean && \
     git clone --branch rados https://github.com/DODAS-TS/sts-wire.git && \
     cd sts-wire && make build-linux-with-rclone && mv sts-wire_linux /usr/local/bin/sts-wire && \
-    cd .. && rm -rf sts-wire && adduser --disabled-password --group --system --gecos '' --home /home/docker docker
+    adduser --disabled-password --group --system --gecos '' --home /home/docker docker && \
+    mkdir -p /home/docker/.cache/sts-wire && cp rclone/rclone/rclone /home/docker/.cache/sts-wire/ && \
+    chmod 750 /home/docker/.cache/sts-wire/rclone && chown docker:docker -R /home/docker && \
+    cd .. && rm -rf sts-wire
 USER docker
 WORKDIR /home/docker

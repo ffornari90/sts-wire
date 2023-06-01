@@ -16,21 +16,17 @@ if [ -f "$FILE" ]; then
            -v "${FILE}":/home/docker/config.yml \
            -v "${PWFILE}":/home/docker/pw-file \
            ffornari/sts-wire-rados \
-           sh -c -x \
-           'mkdir -p rgw .cache && \
+           sh -c 'mkdir -p rgw && \
            nice -n 19 sts-wire --config config.yml \
-           --localCache full --tryRemount --noDummyFileCheck \
-           --localCacheDir .cache \
-           &>"mount_log_sts-wire.txt" & sleep 3s && \
+           --localCache full --tryRemount --noDummyFileCheck & sleep 3s && \
            eval `oidc-agent` && oidc-add --pw-file=pw-file docker-admin-ds-119 && \
            ./put-client-in-whitelist.sh \
-           "$(grep -m1 client_id $HOME/sts-wire.log | jq -r '"'"'.body'"'"' | jq -r '"'"'.client_id'"'"')" && \
+           "$(grep -m1 client_id sts-wire.log | jq -r '"'"'.body'"'"' | jq -r '"'"'.client_id'"'"')" && \
            curl -s -L -X GET -c cookies.txt --cert public.crt --key private.key \
            "https://ds-119.cr.cnaf.infn.it/dashboard?x509ClientAuth=true" > /dev/null 2>&1 && \
-           EXCHANGE_URI=$(curl -vvv -b cookies.txt \
-           --cert public.crt --key private.key --stderr - \
+           EXCHANGE_URI=$(curl -vvv -b cookies.txt --cert public.crt --key private.key --stderr - \
            "$(cat sts-wire.log | grep authorize | jq -r '"'"'.message'"'"')" \
            | grep -m1 Location | awk -F'"'"' '"'"' '"'"'{print $3}'"'"' | tr -d '"'"'\r'"'"') && \
-           oidc-gen --pw-file=pw-file --codeExchange="${EXCHANGE_URI}"; \
+           curl -s "${EXCHANGE_URI}" > /dev/null 2>&1 && \
            tail -f /dev/null'
 fi
