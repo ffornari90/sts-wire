@@ -1,7 +1,7 @@
 #!/bin/bash
 ROOTDIR=$(git rev-parse --show-toplevel)
-PWFILE="${ROOTDIR}/pw-file"
-FILE="${ROOTDIR}/config.yml"
+PWFILE="${ROOTDIR}/scripts/pw-file"
+FILE="${ROOTDIR}/profiles/config-$1.yml"
 WLFILE="${ROOTDIR}/scripts/put-client-in-whitelist.sh"
 if [ -f "$FILE" ]; then
   docker run --name=sts-wire-client$1 \
@@ -15,11 +15,13 @@ if [ -f "$FILE" ]; then
            -v "${WLFILE}":/home/docker/put-client-in-whitelist.sh \
            -v "${FILE}":/home/docker/config.yml \
            -v "${PWFILE}":/home/docker/pw-file \
+           -v "${PWD}/cache-$1":/tmp \
            ffornari/sts-wire-rados \
-           sh -c 'mkdir -p rgw && \
+           sh -x -c 'mkdir -p rgw /tmp/rclone && \
            nice -n 19 sts-wire --config config.yml \
-           --localCache full --tryRemount --noDummyFileCheck & sleep 3s && \
-           eval `oidc-agent` && oidc-add --pw-file=pw-file docker-admin-ds-119 && \
+           --localCache full --tryRemount --noDummyFileCheck \
+           --localCacheDir "/tmp/rclone" & sleep 3s && \
+           eval `oidc-agent` && oidc-add --pw-file=pw-file docker-ds-119-cs-003 && \
            ./put-client-in-whitelist.sh \
            "$(grep -m1 client_id sts-wire.log | jq -r '"'"'.body'"'"' | jq -r '"'"'.client_id'"'"')" \
            > /dev/null 2>&1 && curl -s -L -X GET -c cookies.txt --cert public.crt --key private.key \
